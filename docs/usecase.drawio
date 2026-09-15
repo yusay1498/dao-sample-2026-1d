@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="ユースケース" id="dQmo_oC129XxzzM0qRwa">
+    <mxGraphModel dx="1030" dy="623" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="イベント運営会社" vertex="1">
+          <mxGeometry height="85" width="40" x="160" y="292.5" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="600" width="290" x="282.5" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="イベントを参照する&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;（全件）&lt;/span&gt;" vertex="1">
+          <mxGeometry height="80" width="192.5" x="347.5" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-8" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="イベントを作成する" vertex="1">
+          <mxGeometry height="80" width="192.5" x="347.5" y="268" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-9" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="イベントを参照する（個別）" vertex="1">
+          <mxGeometry height="80" width="192.5" x="347.5" y="176" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="イベントを更新する（全更新）" vertex="1">
+          <mxGeometry height="80" width="192.5" x="347.5" y="359" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-12" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="イベントを更新する（一部更新）" vertex="1">
+          <mxGeometry height="80" width="192.5" x="347.5" y="451" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-14" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="イベントを削除する&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="192.5" x="347.5" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=20;" value="イベント管理システム" vertex="1">
+          <mxGeometry height="30" width="202.5" x="326.25" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-20" edge="1" parent="1" source="sjY_Xk9g6E23FrthXNX7-1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;" target="sjY_Xk9g6E23FrthXNX7-14" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="180" y="400" as="sourcePoint" />
+            <mxPoint x="280" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-21" edge="1" parent="1" source="sjY_Xk9g6E23FrthXNX7-1" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="sjY_Xk9g6E23FrthXNX7-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="250" y="278" as="sourcePoint" />
+            <mxPoint x="340" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-22" edge="1" parent="1" source="sjY_Xk9g6E23FrthXNX7-1" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="277.5" y="280" as="sourcePoint" />
+            <mxPoint x="347.5" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-23" edge="1" parent="1" source="sjY_Xk9g6E23FrthXNX7-1" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="sjY_Xk9g6E23FrthXNX7-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="210" y="340" as="sourcePoint" />
+            <mxPoint x="347.5" y="419.17" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-24" edge="1" parent="1" source="sjY_Xk9g6E23FrthXNX7-1" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="sjY_Xk9g6E23FrthXNX7-8" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="210" y="320" as="sourcePoint" />
+            <mxPoint x="347.5" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sjY_Xk9g6E23FrthXNX7-25" edge="1" parent="1" source="sjY_Xk9g6E23FrthXNX7-1" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="sjY_Xk9g6E23FrthXNX7-12" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="230" y="410" as="sourcePoint" />
+            <mxPoint x="302.5" y="485" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
