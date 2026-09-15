@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - event-management/**
+      - .github/workflows/event-management-ci.yml
   pull_request:
     paths:
       - event-management/**
