@@ -37,7 +37,7 @@ public class JdbcEventCategoryRepository implements EventCategoryRepository {
     private static EventCategory mapRow(ResultSet rs) throws SQLException {
         return new EventCategory(
                 rs.getString("event_category_id"),
-                EventCategoryName.valueOf(rs.getString("event_category_name"))
+                EventCategoryName.of(rs.getString("event_category_name"))
         );
     }
 }

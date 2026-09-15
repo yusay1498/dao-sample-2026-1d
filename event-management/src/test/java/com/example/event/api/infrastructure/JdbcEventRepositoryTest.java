@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = "spring.sql.init.mode=always")
 @Sql(statements = {
         "INSERT INTO venues (venue_id, venue_name, capacity, address) VALUES ('11111111-1111-1111-1111-111111111111', 'テスト会場', 300, '東京都渋谷区')",
-        "INSERT INTO event_categories (event_category_id, event_category_name) VALUES ('22222222-2222-2222-2222-222222222222', 'LIVE')"
+        "INSERT INTO event_categories (event_category_id, event_category_name) VALUES ('22222222-2222-2222-2222-222222222222', 'ライブ')"
 })
 class JdbcEventRepositoryTest {
 
