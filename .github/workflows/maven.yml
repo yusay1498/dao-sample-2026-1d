@@ -1,0 +1,39 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Event Management Project CI with Maven
+
+on:
+  push:
+    paths:
+      - event-management/**
+  pull_request:
+    paths:
+      - event-management/**
+      - .github/workflows/event-management-ci.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: event-management
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: SetUp JDK (Amazon Corretto 25)
+        uses: actions/setup-java@v6
+        with:
+          java-version: '25'
+          distribution: 'corretto'
+          cache: maven
+      - name: Run Maven Wrapper
+        run: ./mvnw verify
