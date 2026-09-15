@@ -1,5 +1,6 @@
 package com.example.event.api.domain.entity;
 
+import com.example.event.api.domain.entity.vo.EventCategoryName;
 import jakarta.validation.constraints.*;
 
 import java.time.OffsetDateTime;
@@ -7,7 +8,9 @@ import java.time.OffsetDateTime;
 public record Event(
         String eventId,
         @NotBlank @Size(max = 36) String venueId,
+        @Size(max = 50) String venueName,
         @NotBlank @Size(max = 36) String eventCategoryId,
+        EventCategoryName eventCategoryName,
         @NotBlank @Size(max = 100) String eventName,
         @NotBlank @Size(max = 100) String performer,
         @NotBlank @Size(max = 1500) String description,
