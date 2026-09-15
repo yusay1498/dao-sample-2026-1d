@@ -21,6 +21,7 @@ event-management
 --------------------------------------------------------------------------------
 
 ```bash
+cd ./event-management/
 ./mvnw clean package
 ```
 
