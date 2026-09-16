@@ -21,8 +21,7 @@ event-management
 --------------------------------------------------------------------------------
 
 ```bash
-cd ./event-management/
-./mvnw clean package
+(cd event-management && ./mvnw clean package)
 ```
 
 
@@ -33,30 +32,27 @@ cd ./event-management/
 
 手順 1. DBを起動
 
+`compose.yaml`の`postgres`サービスが、起動時に`db/01_schema.sql`・`db/02_data.sql`を自動的に適用します。
+
 ```bash
-docker run --rm -d --name event-management-postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  postgres:latest
+docker compose up postgres -d
 ```
 
-手順 2. スキーマ・初期データを投入
+手順 2. APIサーバーを起動
 
 ```bash
-docker exec -i event-management-postgres psql -U postgres < ../db/01_schema.sql
-docker exec -i event-management-postgres psql -U postgres < ../db/02_data.sql
-```
-
-手順 3. APIサーバーを起動
-
-```bash
+(cd event-management && \
 ./mvnw clean spring-boot:run \
 -Dspring-boot.run.arguments="
-  --spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+  --spring.datasource.url=jdbc:postgresql://localhost:5432/events
   --spring.datasource.username=postgres
   --spring.datasource.password=postgres
-"
+")
 ```
+
+DBの中身は[DbGate](http://localhost:5480)からも確認できます（`docker compose up dbgate -d`で起動）。
+
+- 補足: `compose.yaml`には`event-management`サービス（Dockerイメージとしてのビルド・起動）も定義されています。動作確認だけであれば、上記の手順2の代わりに`docker compose up --build`で一括起動することもできますが、その場合ローカルの`spring-boot:run`とポート（8080）が競合するため、両方を同時には起動しないでください。
 
 
 ［デモ］APIの使い方
