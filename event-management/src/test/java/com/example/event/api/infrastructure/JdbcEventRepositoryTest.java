@@ -14,6 +14,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,6 +77,18 @@ class JdbcEventRepositoryTest {
     }
 
     @Test
+    @DisplayName("複数件登録されている場合、findAllは開始日時の昇順で全イベントを返す")
+    void givenMultipleEvents_whenFindAll_thenReturnAllEventsOrderedByStartTime() {
+        Event laterEvent = jdbcEventRepository.save(createEvent(null, OffsetDateTime.parse("2026-11-01T18:00:00+09:00")));
+        Event earlierEvent = jdbcEventRepository.save(createEvent(null, OffsetDateTime.parse("2026-09-01T18:00:00+09:00")));
+
+        List<Event> actual = jdbcEventRepository.findAll();
+
+        assertThat(actual).extracting(Event::eventId)
+                .containsSubsequence(earlierEvent.eventId(), laterEvent.eventId());
+    }
+
+    @Test
     @DisplayName("存在するeventIdを指定した場合、findByIdはそのイベントを返す")
     void givenExistingEventId_whenFindById_thenReturnEvent() {
         Event savedEvent = jdbcEventRepository.save(createEvent(null));
@@ -111,6 +124,10 @@ class JdbcEventRepositoryTest {
     }
 
     private Event createEvent(String eventId) {
+        return createEvent(eventId, OffsetDateTime.parse("2026-10-01T18:00:00+09:00"));
+    }
+
+    private Event createEvent(String eventId, OffsetDateTime startTime) {
         return new Event(
                 eventId,
                 VENUE_ID,
@@ -120,8 +137,8 @@ class JdbcEventRepositoryTest {
                 "サンプルライブ",
                 "サンプルアーティスト",
                 "説明文",
-                OffsetDateTime.parse("2026-10-01T18:00:00+09:00"),
-                OffsetDateTime.parse("2026-10-01T21:00:00+09:00"),
+                startTime,
+                startTime.plusHours(3),
                 100,
                 0
         );

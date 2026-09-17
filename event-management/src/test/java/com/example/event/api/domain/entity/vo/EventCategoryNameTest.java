@@ -9,6 +9,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class EventCategoryNameTest {
 
     @Test
+    @DisplayName("getDisplayNameは列挙子に対応する表示名を返す")
+    void whenGetDisplayName_thenReturnCorrespondingDisplayName() {
+        assertThat(EventCategoryName.LIVE.getDisplayName()).isEqualTo("ライブ");
+    }
+
+    @Test
     @DisplayName("DBに格納された表示名を指定した場合、ofは対応する列挙子を返す")
     void givenKnownDisplayName_whenOf_thenReturnMatchingEnumConstant() {
         EventCategoryName actual = EventCategoryName.of("ライブ");

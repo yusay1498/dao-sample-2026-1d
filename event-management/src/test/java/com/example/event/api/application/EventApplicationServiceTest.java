@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +34,17 @@ class EventApplicationServiceTest {
 
     private final EventApplicationService eventApplicationService =
             new EventApplicationService(eventRepository, venueRepository, eventCategoryRepository);
+
+    @Test
+    @DisplayName("listは登録済みの全イベントを返す")
+    void whenList_thenReturnAllEvents() {
+        List<Event> events = List.of(createEvent("event-1"), createEvent("event-2"));
+        when(eventRepository.findAll()).thenReturn(events);
+
+        List<Event> actual = eventApplicationService.list();
+
+        assertThat(actual).isEqualTo(events);
+    }
 
     @Test
     @DisplayName("イベントIDが存在する場合、lookupはそのイベントを返す")
@@ -102,6 +114,50 @@ class EventApplicationServiceTest {
 
         assertThatThrownBy(() -> eventApplicationService.update("unknown", createUnresolvedEvent(null)))
                 .isInstanceOf(EventNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("参照する会場・イベント区分がともに存在する場合、updateは解決した会場名・区分名を付与して保存する")
+    void givenExistingVenueAndEventCategory_whenUpdate_thenSaveEventWithResolvedNames() {
+        Event existedEvent = createEvent("event-1");
+        Event savedEvent = createEvent("event-1");
+        when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
+        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
+        when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.of(createEventCategory()));
+        when(eventRepository.save(any())).thenReturn(savedEvent);
+
+        Event actual = eventApplicationService.update("event-1", createUnresolvedEvent("event-1"));
+
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventRepository).save(eventCaptor.capture());
+        assertThat(eventCaptor.getValue().venueName()).isEqualTo("テスト会場");
+        assertThat(eventCaptor.getValue().eventCategoryName()).isEqualTo(EventCategoryName.LIVE);
+        assertThat(actual).isEqualTo(savedEvent);
+    }
+
+    @Test
+    @DisplayName("会場が存在しない場合、updateはVenueNotFoundExceptionをスローしsaveを呼び出さない")
+    void givenUnknownVenueId_whenUpdate_thenThrowVenueNotFoundExceptionAndNotSave() {
+        Event existedEvent = createEvent("event-1");
+        when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
+        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> eventApplicationService.update("event-1", createUnresolvedEvent("event-1")))
+                .isInstanceOf(VenueNotFoundException.class);
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("イベント区分が存在しない場合、updateはEventCategoryNotFoundExceptionをスローしsaveを呼び出さない")
+    void givenUnknownEventCategoryId_whenUpdate_thenThrowEventCategoryNotFoundExceptionAndNotSave() {
+        Event existedEvent = createEvent("event-1");
+        when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
+        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
+        when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> eventApplicationService.update("event-1", createUnresolvedEvent("event-1")))
+                .isInstanceOf(EventCategoryNotFoundException.class);
+        verify(eventRepository, never()).save(any());
     }
 
     @Test
