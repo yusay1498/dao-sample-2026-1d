@@ -2,6 +2,7 @@ package com.example.event.api.presentation;
 
 import com.example.event.api.application.EventApplicationService;
 import com.example.event.api.domain.entity.Event;
+import com.example.event.api.domain.exception.IllegalPropertyException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import org.hibernate.validator.constraints.UUID;
@@ -60,6 +61,10 @@ public class EventRestController {
             @PathVariable("eventId") @UUID String eventId,
             @RequestBody @Valid Event event
     ) {
+        if (!Objects.equals(eventId, event.eventId())) {
+            throw new IllegalPropertyException("eventIdはURLパスと一致させてください。", "eventId", event.eventId());
+        }
+
         return ResponseEntity.ok(eventApplicationService.update(eventId, event));
     }
 
@@ -75,11 +80,11 @@ public class EventRestController {
             mergedEvent = new ValidatableObjectReader(objectMapper.readerForUpdating(existedEvent), validator)
                     .readValue(patchJson);
         } catch (JacksonException e) {
-            throw new IllegalArgumentException("不正なリクエストボディです。", e);
+            throw new IllegalPropertyException("不正なリクエストボディです。", e, "patchJson", patchJson);
         }
 
         if (!Objects.equals(eventId, mergedEvent.eventId())) {
-            throw new IllegalArgumentException("eventIdは変更できません。");
+            throw new IllegalPropertyException("eventIdは変更できません。", "eventId", mergedEvent.eventId());
         }
 
         return ResponseEntity.ok(eventApplicationService.update(eventId, mergedEvent));

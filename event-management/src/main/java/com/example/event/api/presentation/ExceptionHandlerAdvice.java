@@ -2,6 +2,7 @@ package com.example.event.api.presentation;
 
 import com.example.event.api.domain.exception.EventCategoryNotFoundException;
 import com.example.event.api.domain.exception.EventNotFoundException;
+import com.example.event.api.domain.exception.IllegalPropertyException;
 import com.example.event.api.domain.exception.VenueNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -29,6 +30,15 @@ public class ExceptionHandlerAdvice {
     public ResponseEntity<ProblemDetail> handleReferenceNotFoundException(RuntimeException e) {
         logger.warn(e.getMessage());
         return ResponseEntity.of(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage())).build();
+    }
+
+    @ExceptionHandler(IllegalPropertyException.class)
+    public ResponseEntity<ProblemDetail> handleIllegalPropertyException(IllegalPropertyException e) {
+        logger.warn(e.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+        problemDetail.setProperty("name", e.getName());
+        problemDetail.setProperty("value", e.getValue());
+        return ResponseEntity.of(problemDetail).build();
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

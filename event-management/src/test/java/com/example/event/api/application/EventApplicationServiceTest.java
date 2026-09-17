@@ -28,16 +28,12 @@ class EventApplicationServiceTest {
     private static final String VENUE_ID = "11111111-1111-1111-1111-111111111111";
     private static final String EVENT_CATEGORY_ID = "22222222-2222-2222-2222-222222222222";
 
-    private final EventRepository eventRepository = mock(EventRepository.class);
-    private final VenueRepository venueRepository = mock(VenueRepository.class);
-    private final EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
-
-    private final EventApplicationService eventApplicationService =
-            new EventApplicationService(eventRepository, venueRepository, eventCategoryRepository);
-
     @Test
     @DisplayName("listは登録済みの全イベントを返す")
     void whenList_thenReturnAllEvents() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         List<Event> events = List.of(createEvent("event-1"), createEvent("event-2"));
         when(eventRepository.findAll()).thenReturn(events);
 
@@ -49,6 +45,9 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("イベントIDが存在する場合、lookupはそのイベントを返す")
     void givenExistingEventId_whenLookup_thenReturnEvent() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         Event event = createEvent("event-1");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(event));
 
@@ -60,6 +59,9 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("イベントIDが存在しない場合、lookupはEventNotFoundExceptionをスローする")
     void givenUnknownEventId_whenLookup_thenThrowEventNotFoundException() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         when(eventRepository.findById("unknown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> eventApplicationService.lookup("unknown"))
@@ -69,6 +71,11 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("参照する会場・イベント区分がともに存在する場合、createは解決した会場名・区分名を付与して保存する")
     void givenExistingVenueAndEventCategory_whenCreate_thenSaveEventWithResolvedNames() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        VenueRepository venueRepository = mock(VenueRepository.class);
+        EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, venueRepository, eventCategoryRepository);
         Event requestedEvent = createUnresolvedEvent(null);
         Event savedEvent = createEvent("event-1");
         when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
@@ -87,6 +94,10 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("会場が存在しない場合、createはVenueNotFoundExceptionをスローしsaveを呼び出さない")
     void givenUnknownVenueId_whenCreate_thenThrowVenueNotFoundExceptionAndNotSave() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        VenueRepository venueRepository = mock(VenueRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, venueRepository, mock(EventCategoryRepository.class));
         Event requestedEvent = createUnresolvedEvent(null);
         when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.empty());
 
@@ -98,6 +109,11 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("イベント区分が存在しない場合、createはEventCategoryNotFoundExceptionをスローしsaveを呼び出さない")
     void givenUnknownEventCategoryId_whenCreate_thenThrowEventCategoryNotFoundExceptionAndNotSave() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        VenueRepository venueRepository = mock(VenueRepository.class);
+        EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, venueRepository, eventCategoryRepository);
         Event requestedEvent = createUnresolvedEvent(null);
         when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
         when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.empty());
@@ -110,6 +126,9 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("存在しないイベントIDに対するupdateはEventNotFoundExceptionをスローする")
     void givenUnknownEventId_whenUpdate_thenThrowEventNotFoundException() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         when(eventRepository.findById("unknown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> eventApplicationService.update("unknown", createUnresolvedEvent(null)))
@@ -119,6 +138,11 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("参照する会場・イベント区分がともに存在する場合、updateは解決した会場名・区分名を付与して保存する")
     void givenExistingVenueAndEventCategory_whenUpdate_thenSaveEventWithResolvedNames() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        VenueRepository venueRepository = mock(VenueRepository.class);
+        EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, venueRepository, eventCategoryRepository);
         Event existedEvent = createEvent("event-1");
         Event savedEvent = createEvent("event-1");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
@@ -138,6 +162,10 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("会場が存在しない場合、updateはVenueNotFoundExceptionをスローしsaveを呼び出さない")
     void givenUnknownVenueId_whenUpdate_thenThrowVenueNotFoundExceptionAndNotSave() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        VenueRepository venueRepository = mock(VenueRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, venueRepository, mock(EventCategoryRepository.class));
         Event existedEvent = createEvent("event-1");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
         when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.empty());
@@ -150,6 +178,11 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("イベント区分が存在しない場合、updateはEventCategoryNotFoundExceptionをスローしsaveを呼び出さない")
     void givenUnknownEventCategoryId_whenUpdate_thenThrowEventCategoryNotFoundExceptionAndNotSave() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        VenueRepository venueRepository = mock(VenueRepository.class);
+        EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, venueRepository, eventCategoryRepository);
         Event existedEvent = createEvent("event-1");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
         when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
@@ -163,6 +196,9 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("イベントIDが存在する場合、deleteはイベントを削除する")
     void givenExistingEventId_whenDelete_thenRemoveEvent() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         Event existedEvent = createEvent("event-1");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
 
@@ -174,6 +210,9 @@ class EventApplicationServiceTest {
     @Test
     @DisplayName("存在しないイベントIDに対するdeleteはEventNotFoundExceptionをスローしdeleteByIdを呼び出さない")
     void givenUnknownEventId_whenDelete_thenThrowEventNotFoundExceptionAndNotDelete() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        EventApplicationService eventApplicationService = new EventApplicationService(
+                eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         when(eventRepository.findById("unknown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> eventApplicationService.delete("unknown"))

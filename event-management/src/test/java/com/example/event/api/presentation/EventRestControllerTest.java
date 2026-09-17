@@ -126,9 +126,18 @@ class EventRestControllerTest {
 
         mockMvc.perform(put("/events/{eventId}", EVENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createUnresolvedEvent())))
+                        .content(objectMapper.writeValueAsString(createUnresolvedEvent(EVENT_ID))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.eventId").value(EVENT_ID));
+    }
+
+    @Test
+    @DisplayName("ボディのeventIdがパスと一致しないPUT /events/{eventId}は400を返す")
+    void givenMismatchedEventIdInBody_whenPut_thenReturnBadRequest() throws Exception {
+        mockMvc.perform(put("/events/{eventId}", EVENT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createUnresolvedEvent("44444444-4444-4444-4444-444444444444"))))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -215,9 +224,13 @@ class EventRestControllerTest {
     }
 
     private Event createUnresolvedEvent() {
+        return createUnresolvedEvent(null);
+    }
+
+    private Event createUnresolvedEvent(String eventId) {
         // Controllerに届く直前のリクエストボディ（会場名・区分名は未指定）を再現する
         return new Event(
-                null,
+                eventId,
                 VENUE_ID,
                 null,
                 EVENT_CATEGORY_ID,
