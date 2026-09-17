@@ -80,7 +80,8 @@ public class EventRestController {
             mergedEvent = new ValidatableObjectReader(objectMapper.readerForUpdating(existedEvent), validator)
                     .readValue(patchJson);
         } catch (JacksonException e) {
-            throw new IllegalPropertyException("不正なリクエストボディです。", e, "patchJson", patchJson);
+            // patchJsonにはリクエスト本文全体（機密情報や巨大な値を含みうる）が入るため、valueには反映しない
+            throw new IllegalPropertyException("不正なリクエストボディです。", e, "patchJson", null);
         }
 
         if (!Objects.equals(eventId, mergedEvent.eventId())) {

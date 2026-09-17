@@ -68,7 +68,7 @@ class JdbcEventRepositoryTest {
 
         assertThat(actual.eventId()).isNotBlank();
         assertThat(actual.eventName()).isEqualTo(event.eventName());
-        assertThat(eventRepository.findById(actual.eventId())).isPresent();
+        assertThat(selectEventName(actual.eventId())).contains(event.eventName());
     }
 
     @Test
@@ -94,10 +94,7 @@ class JdbcEventRepositoryTest {
         Event actual = eventRepository.save(changedEvent);
 
         assertThat(actual.eventName()).isEqualTo("更新後のイベント名");
-        assertThat(eventRepository.findById(savedEvent.eventId()))
-                .get()
-                .extracting(Event::eventName)
-                .isEqualTo("更新後のイベント名");
+        assertThat(selectEventName(savedEvent.eventId())).contains("更新後のイベント名");
     }
 
     @Test
@@ -128,10 +125,25 @@ class JdbcEventRepositoryTest {
     void givenExistingEventId_whenDeleteById_thenRemoveEventFromDatabase() {
         JdbcEventRepository eventRepository = new JdbcEventRepository(new EventDao(jdbcClient));
         Event savedEvent = eventRepository.save(createEvent(null));
+        assertThat(countEventsById(savedEvent.eventId())).isEqualTo(1);
 
         eventRepository.deleteById(savedEvent.eventId());
 
-        assertThat(eventRepository.findById(savedEvent.eventId())).isEmpty();
+        assertThat(countEventsById(savedEvent.eventId())).isEqualTo(0);
+    }
+
+    private Optional<String> selectEventName(String eventId) {
+        return jdbcClient.sql("SELECT event_name FROM events WHERE event_id = :eventId")
+                .param("eventId", eventId)
+                .query(String.class)
+                .optional();
+    }
+
+    private int countEventsById(String eventId) {
+        return jdbcClient.sql("SELECT COUNT(*) FROM events WHERE event_id = :eventId")
+                .param("eventId", eventId)
+                .query(Integer.class)
+                .single();
     }
 
     private Event createEvent(String eventId) {

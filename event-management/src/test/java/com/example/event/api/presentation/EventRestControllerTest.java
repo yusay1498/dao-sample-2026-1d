@@ -132,12 +132,15 @@ class EventRestControllerTest {
     }
 
     @Test
-    @DisplayName("ボディのeventIdがパスと一致しないPUT /events/{eventId}は400を返す")
+    @DisplayName("ボディのeventIdがパスと一致しないPUT /events/{eventId}は400を返し、name/valueにミスマッチ内容を含む")
     void givenMismatchedEventIdInBody_whenPut_thenReturnBadRequest() throws Exception {
         mockMvc.perform(put("/events/{eventId}", EVENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUnresolvedEvent("44444444-4444-4444-4444-444444444444"))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.name").value("eventId"))
+                .andExpect(jsonPath("$.value").value("44444444-4444-4444-4444-444444444444"));
     }
 
     @Test
@@ -194,7 +197,7 @@ class EventRestControllerTest {
     }
 
     @Test
-    @DisplayName("eventIdの変更を試みるPATCH /events/{eventId}は400を返す")
+    @DisplayName("eventIdの変更を試みるPATCH /events/{eventId}は400を返し、name/valueに変更後のeventIdを含む")
     void givenPatchBodyChangingEventId_whenPatch_thenReturnBadRequest() throws Exception {
         Event existedEvent = createEvent(EVENT_ID);
         when(eventApplicationService.lookup(EVENT_ID)).thenReturn(existedEvent);
@@ -204,7 +207,26 @@ class EventRestControllerTest {
                         .content("""
                                 {"eventId": "44444444-4444-4444-4444-444444444444"}
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.name").value("eventId"))
+                .andExpect(jsonPath("$.value").value("44444444-4444-4444-4444-444444444444"));
+    }
+
+    @Test
+    @DisplayName("構文が不正なJSONでPATCH /events/{eventId}すると、400を返しリクエスト本文をvalueに含まない")
+    void givenMalformedJson_whenPatch_thenReturnBadRequestWithoutReflectingRequestBody() throws Exception {
+        Event existedEvent = createEvent(EVENT_ID);
+        when(eventApplicationService.lookup(EVENT_ID)).thenReturn(existedEvent);
+        String malformedJson = "{\"eventName\": \"改訂版イベント名\"";
+
+        mockMvc.perform(patch("/events/{eventId}", EVENT_ID)
+                        .contentType("application/merge-patch+json")
+                        .content(malformedJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.name").value("patchJson"))
+                .andExpect(jsonPath("$.value").doesNotExist());
     }
 
     @Test

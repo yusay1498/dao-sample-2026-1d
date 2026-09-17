@@ -37,7 +37,10 @@ public class ExceptionHandlerAdvice {
         logger.warn(e.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
         problemDetail.setProperty("name", e.getName());
-        problemDetail.setProperty("value", e.getValue());
+        // 値が任意の入力（例: リクエスト本文全体）を含みうる場合はvalueを設定しないため、nullなら省略する
+        if (e.getValue() != null) {
+            problemDetail.setProperty("value", e.getValue());
+        }
         return ResponseEntity.of(problemDetail).build();
     }
 

@@ -2,6 +2,7 @@ package com.example.event.api.presentation;
 
 import com.example.event.api.domain.exception.EventCategoryNotFoundException;
 import com.example.event.api.domain.exception.EventNotFoundException;
+import com.example.event.api.domain.exception.IllegalPropertyException;
 import com.example.event.api.domain.exception.VenueNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -51,6 +52,28 @@ class ExceptionHandlerAdviceTest {
                 .handleReferenceNotFoundException(new EventCategoryNotFoundException("category-1"));
 
         assertThat(actual.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @DisplayName("valueを伴うIllegalPropertyExceptionを処理すると、name/valueを含む400のProblemDetailを返す")
+    void givenIllegalPropertyExceptionWithValue_whenHandle_thenReturnBadRequestProblemDetailWithNameAndValue() {
+        ResponseEntity<ProblemDetail> actual = exceptionHandlerAdvice.handleIllegalPropertyException(
+                new IllegalPropertyException("eventIdはURLパスと一致させてください。", "eventId", "event-1"));
+
+        assertThat(actual.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(actual.getBody().getProperties()).containsEntry("name", "eventId");
+        assertThat(actual.getBody().getProperties()).containsEntry("value", "event-1");
+    }
+
+    @Test
+    @DisplayName("valueがnullのIllegalPropertyExceptionを処理すると、valueを含まない400のProblemDetailを返す")
+    void givenIllegalPropertyExceptionWithNullValue_whenHandle_thenReturnBadRequestProblemDetailWithoutValue() {
+        ResponseEntity<ProblemDetail> actual = exceptionHandlerAdvice.handleIllegalPropertyException(
+                new IllegalPropertyException("不正なリクエストボディです。", "patchJson", null));
+
+        assertThat(actual.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(actual.getBody().getProperties()).containsEntry("name", "patchJson");
+        assertThat(actual.getBody().getProperties()).doesNotContainKey("value");
     }
 
     @Test
