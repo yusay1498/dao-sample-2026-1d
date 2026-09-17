@@ -38,3 +38,52 @@ jobs:
           cache: maven
       - name: Run Maven Wrapper
         run: ./mvnw verify
+      - name: Summarize JaCoCo coverage
+        if: always()
+        run: |
+          python <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          
+          report = Path("target/site/jacoco/jacoco.xml")
+          if not report.exists():
+              summary = "JaCoCo XML report was not generated.\n"
+          else:
+              counters = {
+                  counter.attrib["type"]: counter.attrib
+                  for counter in ET.parse(report).getroot().findall("counter")
+              }
+          
+              def format_ratio(counter_type):
+                  counter = counters[counter_type]
+                  covered = int(counter["covered"])
+                  total = covered + int(counter["missed"])
+                  ratio = 0.0 if total == 0 else covered / total * 100
+                  return f"{covered}/{total} ({ratio:.2f}%)"
+          
+              summary = "\n".join([
+                  "JaCoCo coverage summary",
+                  f"- Instructions: {format_ratio('INSTRUCTION')}",
+                  f"- Branches: {format_ratio('BRANCH')}",
+                  f"- Lines: {format_ratio('LINE')}",
+                  f"- Methods: {format_ratio('METHOD')}",
+                  f"- Classes: {format_ratio('CLASS')}",
+              ]) + "\n"
+          
+          print(summary)
+          
+          github_step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if github_step_summary:
+              with open(github_step_summary, "a", encoding="utf-8") as fh:
+                  fh.write(summary)
+          PY
+      - name: Upload JaCoCo artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-management-jacoco-report
+          path: |
+            event-management/target/site/jacoco
+            event-management/target/jacoco.exec
+          if-no-files-found: warn
