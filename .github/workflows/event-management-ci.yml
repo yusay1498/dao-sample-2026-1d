@@ -38,3 +38,9 @@ jobs:
           cache: maven
       - name: Run Maven Wrapper
         run: ./mvnw verify
+      - name: Upload JaCoCo report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            event-management/target/site/jacoco/
