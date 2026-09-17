@@ -43,5 +43,4 @@ jobs:
         with:
           name: jacoco-report
           path: |
-            target/site/jacoco/
-            target/site/jacoco/jacoco.xml
+            event-management/target/site/jacoco/
