@@ -40,6 +40,7 @@ jobs:
         run: ./mvnw verify
       - name: Summarize JaCoCo coverage
         if: always()
+        working-directory: event-management
         run: |
           python <<'PY'
           import os
