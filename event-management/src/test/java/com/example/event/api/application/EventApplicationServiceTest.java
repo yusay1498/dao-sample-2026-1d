@@ -25,16 +25,15 @@ import static org.mockito.Mockito.*;
 
 class EventApplicationServiceTest {
 
-    private static final String VENUE_ID = "11111111-1111-1111-1111-111111111111";
-    private static final String EVENT_CATEGORY_ID = "22222222-2222-2222-2222-222222222222";
-
     @Test
     @DisplayName("listは登録済みの全イベントを返す")
     void whenList_thenReturnAllEvents() {
         EventRepository eventRepository = mock(EventRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
-        List<Event> events = List.of(createEvent("event-1"), createEvent("event-2"));
+        List<Event> events = List.of(
+                createEvent("event-1", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"),
+                createEvent("event-2", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222"));
         when(eventRepository.findAll()).thenReturn(events);
 
         List<Event> actual = eventApplicationService.list();
@@ -48,7 +47,7 @@ class EventApplicationServiceTest {
         EventRepository eventRepository = mock(EventRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
-        Event event = createEvent("event-1");
+        Event event = createEvent("event-1", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(event));
 
         Event actual = eventApplicationService.lookup("event-1");
@@ -76,10 +75,12 @@ class EventApplicationServiceTest {
         EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, venueRepository, eventCategoryRepository);
-        Event requestedEvent = createUnresolvedEvent(null);
-        Event savedEvent = createEvent("event-1");
-        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
-        when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.of(createEventCategory()));
+        String venueId = "11111111-1111-1111-1111-111111111111";
+        String eventCategoryId = "22222222-2222-2222-2222-222222222222";
+        Event requestedEvent = createUnresolvedEvent(null, venueId, eventCategoryId);
+        Event savedEvent = createEvent("event-1", venueId, eventCategoryId);
+        when(venueRepository.findById(venueId)).thenReturn(Optional.of(createVenue(venueId)));
+        when(eventCategoryRepository.findById(eventCategoryId)).thenReturn(Optional.of(createEventCategory(eventCategoryId)));
         when(eventRepository.save(any())).thenReturn(savedEvent);
 
         Event actual = eventApplicationService.create(requestedEvent);
@@ -98,8 +99,10 @@ class EventApplicationServiceTest {
         VenueRepository venueRepository = mock(VenueRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, venueRepository, mock(EventCategoryRepository.class));
-        Event requestedEvent = createUnresolvedEvent(null);
-        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.empty());
+        String venueId = "11111111-1111-1111-1111-111111111111";
+        String eventCategoryId = "22222222-2222-2222-2222-222222222222";
+        Event requestedEvent = createUnresolvedEvent(null, venueId, eventCategoryId);
+        when(venueRepository.findById(venueId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> eventApplicationService.create(requestedEvent))
                 .isInstanceOf(VenueNotFoundException.class);
@@ -114,9 +117,11 @@ class EventApplicationServiceTest {
         EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, venueRepository, eventCategoryRepository);
-        Event requestedEvent = createUnresolvedEvent(null);
-        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
-        when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.empty());
+        String venueId = "11111111-1111-1111-1111-111111111111";
+        String eventCategoryId = "22222222-2222-2222-2222-222222222222";
+        Event requestedEvent = createUnresolvedEvent(null, venueId, eventCategoryId);
+        when(venueRepository.findById(venueId)).thenReturn(Optional.of(createVenue(venueId)));
+        when(eventCategoryRepository.findById(eventCategoryId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> eventApplicationService.create(requestedEvent))
                 .isInstanceOf(EventCategoryNotFoundException.class);
@@ -131,7 +136,8 @@ class EventApplicationServiceTest {
                 eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
         when(eventRepository.findById("unknown")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> eventApplicationService.update("unknown", createUnresolvedEvent(null)))
+        assertThatThrownBy(() -> eventApplicationService.update("unknown",
+                createUnresolvedEvent(null, "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")))
                 .isInstanceOf(EventNotFoundException.class);
     }
 
@@ -143,14 +149,16 @@ class EventApplicationServiceTest {
         EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, venueRepository, eventCategoryRepository);
-        Event existedEvent = createEvent("event-1");
-        Event savedEvent = createEvent("event-1");
+        String venueId = "11111111-1111-1111-1111-111111111111";
+        String eventCategoryId = "22222222-2222-2222-2222-222222222222";
+        Event existedEvent = createEvent("event-1", venueId, eventCategoryId);
+        Event savedEvent = createEvent("event-1", venueId, eventCategoryId);
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
-        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
-        when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.of(createEventCategory()));
+        when(venueRepository.findById(venueId)).thenReturn(Optional.of(createVenue(venueId)));
+        when(eventCategoryRepository.findById(eventCategoryId)).thenReturn(Optional.of(createEventCategory(eventCategoryId)));
         when(eventRepository.save(any())).thenReturn(savedEvent);
 
-        Event actual = eventApplicationService.update("event-1", createUnresolvedEvent("event-1"));
+        Event actual = eventApplicationService.update("event-1", createUnresolvedEvent("event-1", venueId, eventCategoryId));
 
         ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(eventRepository).save(eventCaptor.capture());
@@ -166,11 +174,13 @@ class EventApplicationServiceTest {
         VenueRepository venueRepository = mock(VenueRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, venueRepository, mock(EventCategoryRepository.class));
-        Event existedEvent = createEvent("event-1");
+        String venueId = "11111111-1111-1111-1111-111111111111";
+        String eventCategoryId = "22222222-2222-2222-2222-222222222222";
+        Event existedEvent = createEvent("event-1", venueId, eventCategoryId);
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
-        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.empty());
+        when(venueRepository.findById(venueId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> eventApplicationService.update("event-1", createUnresolvedEvent("event-1")))
+        assertThatThrownBy(() -> eventApplicationService.update("event-1", createUnresolvedEvent("event-1", venueId, eventCategoryId)))
                 .isInstanceOf(VenueNotFoundException.class);
         verify(eventRepository, never()).save(any());
     }
@@ -183,12 +193,14 @@ class EventApplicationServiceTest {
         EventCategoryRepository eventCategoryRepository = mock(EventCategoryRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, venueRepository, eventCategoryRepository);
-        Event existedEvent = createEvent("event-1");
+        String venueId = "11111111-1111-1111-1111-111111111111";
+        String eventCategoryId = "22222222-2222-2222-2222-222222222222";
+        Event existedEvent = createEvent("event-1", venueId, eventCategoryId);
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
-        when(venueRepository.findById(VENUE_ID)).thenReturn(Optional.of(createVenue()));
-        when(eventCategoryRepository.findById(EVENT_CATEGORY_ID)).thenReturn(Optional.empty());
+        when(venueRepository.findById(venueId)).thenReturn(Optional.of(createVenue(venueId)));
+        when(eventCategoryRepository.findById(eventCategoryId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> eventApplicationService.update("event-1", createUnresolvedEvent("event-1")))
+        assertThatThrownBy(() -> eventApplicationService.update("event-1", createUnresolvedEvent("event-1", venueId, eventCategoryId)))
                 .isInstanceOf(EventCategoryNotFoundException.class);
         verify(eventRepository, never()).save(any());
     }
@@ -199,7 +211,7 @@ class EventApplicationServiceTest {
         EventRepository eventRepository = mock(EventRepository.class);
         EventApplicationService eventApplicationService = new EventApplicationService(
                 eventRepository, mock(VenueRepository.class), mock(EventCategoryRepository.class));
-        Event existedEvent = createEvent("event-1");
+        Event existedEvent = createEvent("event-1", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222");
         when(eventRepository.findById("event-1")).thenReturn(Optional.of(existedEvent));
 
         eventApplicationService.delete("event-1");
@@ -220,12 +232,12 @@ class EventApplicationServiceTest {
         verify(eventRepository, never()).deleteById(any());
     }
 
-    private Event createEvent(String eventId) {
+    private Event createEvent(String eventId, String venueId, String eventCategoryId) {
         return new Event(
                 eventId,
-                VENUE_ID,
+                venueId,
                 "テスト会場",
-                EVENT_CATEGORY_ID,
+                eventCategoryId,
                 EventCategoryName.LIVE,
                 "サンプルライブ",
                 "サンプルアーティスト",
@@ -237,13 +249,13 @@ class EventApplicationServiceTest {
         );
     }
 
-    private Event createUnresolvedEvent(String eventId) {
+    private Event createUnresolvedEvent(String eventId, String venueId, String eventCategoryId) {
         // Controllerがリクエストボディから組み立てた直後の状態（会場名・区分名は未解決）を再現する
         return new Event(
                 eventId,
-                VENUE_ID,
+                venueId,
                 null,
-                EVENT_CATEGORY_ID,
+                eventCategoryId,
                 null,
                 "サンプルライブ",
                 "サンプルアーティスト",
@@ -255,11 +267,11 @@ class EventApplicationServiceTest {
         );
     }
 
-    private Venue createVenue() {
-        return new Venue(VENUE_ID, "テスト会場", 300, "東京都渋谷区");
+    private Venue createVenue(String venueId) {
+        return new Venue(venueId, "テスト会場", 300, "東京都渋谷区");
     }
 
-    private EventCategory createEventCategory() {
-        return new EventCategory(EVENT_CATEGORY_ID, EventCategoryName.LIVE);
+    private EventCategory createEventCategory(String eventCategoryId) {
+        return new EventCategory(eventCategoryId, EventCategoryName.LIVE);
     }
 }
