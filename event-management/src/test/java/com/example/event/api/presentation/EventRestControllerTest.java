@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +41,23 @@ class EventRestControllerTest {
 
     @MockitoBean
     EventApplicationService eventApplicationService;
+
+    @Test
+    @DisplayName("イベントが登録されている場合、GET /eventsは200と一覧を返す")
+    void givenExistingEvents_whenGetList_thenReturnOkWithEventList() throws Exception {
+        when(eventApplicationService.list()).thenReturn(List.of(createEvent(EVENT_ID)));
+
+        mockMvc.perform(get("/events"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].eventId").value(EVENT_ID));
+    }
+
+    @Test
+    @DisplayName("不正な形式のeventIdを指定した場合、GET /events/{eventId}は400を返す")
+    void givenMalformedEventId_whenGet_thenReturnBadRequest() throws Exception {
+        mockMvc.perform(get("/events/{eventId}", "not-a-uuid"))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     @DisplayName("存在するイベントIDを指定した場合、GET /events/{eventId}は200と本文を返す")
@@ -102,6 +120,43 @@ class EventRestControllerTest {
     }
 
     @Test
+    @DisplayName("有効なリクエストボディでPUT /events/{eventId}すると、200と更新後の本文を返す")
+    void givenValidRequestBody_whenPut_thenReturnOkWithUpdatedEvent() throws Exception {
+        when(eventApplicationService.update(eq(EVENT_ID), any())).thenReturn(createEvent(EVENT_ID));
+
+        mockMvc.perform(put("/events/{eventId}", EVENT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createUnresolvedEvent(EVENT_ID))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eventId").value(EVENT_ID));
+    }
+
+    @Test
+    @DisplayName("ボディのeventIdがパスと一致しないPUT /events/{eventId}は400を返し、name/valueにミスマッチ内容を含む")
+    void givenMismatchedEventIdInBody_whenPut_thenReturnBadRequest() throws Exception {
+        mockMvc.perform(put("/events/{eventId}", EVENT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createUnresolvedEvent("44444444-4444-4444-4444-444444444444"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.name").value("eventId"))
+                .andExpect(jsonPath("$.value").value("44444444-4444-4444-4444-444444444444"));
+    }
+
+    @Test
+    @DisplayName("必須項目が欠けたリクエストボディでPUT /events/{eventId}すると、400を返す")
+    void givenInvalidRequestBody_whenPut_thenReturnBadRequest() throws Exception {
+        String invalidRequestBody = """
+                {"venueId": "", "eventCategoryId": "%s"}
+                """.formatted(EVENT_CATEGORY_ID);
+
+        mockMvc.perform(put("/events/{eventId}", EVENT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRequestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("application/merge-patch+jsonでPATCH /events/{eventId}すると、指定したフィールドのみが反映される")
     void givenMergePatchWithSingleField_whenPatch_thenUpdateOnlySpecifiedField() throws Exception {
         Event existedEvent = createEvent(EVENT_ID);
@@ -142,6 +197,39 @@ class EventRestControllerTest {
     }
 
     @Test
+    @DisplayName("eventIdの変更を試みるPATCH /events/{eventId}は400を返し、name/valueに変更後のeventIdを含む")
+    void givenPatchBodyChangingEventId_whenPatch_thenReturnBadRequest() throws Exception {
+        Event existedEvent = createEvent(EVENT_ID);
+        when(eventApplicationService.lookup(EVENT_ID)).thenReturn(existedEvent);
+
+        mockMvc.perform(patch("/events/{eventId}", EVENT_ID)
+                        .contentType("application/merge-patch+json")
+                        .content("""
+                                {"eventId": "44444444-4444-4444-4444-444444444444"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.name").value("eventId"))
+                .andExpect(jsonPath("$.value").value("44444444-4444-4444-4444-444444444444"));
+    }
+
+    @Test
+    @DisplayName("構文が不正なJSONでPATCH /events/{eventId}すると、400を返しリクエスト本文をvalueに含まない")
+    void givenMalformedJson_whenPatch_thenReturnBadRequestWithoutReflectingRequestBody() throws Exception {
+        Event existedEvent = createEvent(EVENT_ID);
+        when(eventApplicationService.lookup(EVENT_ID)).thenReturn(existedEvent);
+        String malformedJson = "{\"eventName\": \"改訂版イベント名\"";
+
+        mockMvc.perform(patch("/events/{eventId}", EVENT_ID)
+                        .contentType("application/merge-patch+json")
+                        .content(malformedJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.name").value("patchJson"))
+                .andExpect(jsonPath("$.value").doesNotExist());
+    }
+
+    @Test
     @DisplayName("DELETE /events/{eventId}を実行すると、204を返しdeleteが呼び出される")
     void givenExistingEventId_whenDelete_thenReturnNoContentAndCallDelete() throws Exception {
         mockMvc.perform(delete("/events/{eventId}", EVENT_ID))
@@ -150,10 +238,21 @@ class EventRestControllerTest {
         verify(eventApplicationService).delete(EVENT_ID);
     }
 
+    @Test
+    @DisplayName("不正な形式のeventIdを指定した場合、DELETE /events/{eventId}は400を返す")
+    void givenMalformedEventId_whenDelete_thenReturnBadRequest() throws Exception {
+        mockMvc.perform(delete("/events/{eventId}", "not-a-uuid"))
+                .andExpect(status().isBadRequest());
+    }
+
     private Event createUnresolvedEvent() {
+        return createUnresolvedEvent(null);
+    }
+
+    private Event createUnresolvedEvent(String eventId) {
         // Controllerに届く直前のリクエストボディ（会場名・区分名は未指定）を再現する
         return new Event(
-                null,
+                eventId,
                 VENUE_ID,
                 null,
                 EVENT_CATEGORY_ID,

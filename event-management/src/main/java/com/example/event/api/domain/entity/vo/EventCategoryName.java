@@ -28,4 +28,3 @@ public enum EventCategoryName {
                 .orElseThrow(() -> new IllegalArgumentException("Unknown event category name: " + displayName));
     }
 }
-
