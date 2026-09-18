@@ -8,6 +8,7 @@ event-management
 --------------------------------------------------------------------------------
 
 - Java 25
+- Node.js 22（フロントエンドをローカルで起動する場合）
 - Docker
 
 
@@ -15,6 +16,7 @@ event-management
 --------------------------------------------------------------------------------
 
 - APIサーバー: Java, Spring Boot, Spring Data JDBC (JdbcClient)
+- フロントエンド: Next.js (App Router), React, Tailwind CSS（詳細は[front/README.md](./front/README.md)を参照）
 
 
 ビルド手順
@@ -52,7 +54,17 @@ docker compose up postgres -d
 
 DBの中身は[DbGate](http://localhost:5480)からも確認できます（`docker compose up dbgate -d`で起動）。
 
-- 補足: `compose.yaml`には`event-management`サービス（Dockerイメージとしてのビルド・起動）も定義されています。動作確認だけであれば、上記の手順2の代わりに`docker compose up --build`で一括起動することもできますが、その場合ローカルの`spring-boot:run`とポート（8080）が競合するため、両方を同時には起動しないでください。
+- 補足: `compose.yaml`には`event-management`・`front`サービス（Dockerイメージとしてのビルド・起動）も定義されています。動作確認だけであれば、上記の手順2の代わりに`docker compose up --build`で一括起動することもできますが、その場合ローカルの`spring-boot:run`とポート（8080）が競合するため、両方を同時には起動しないでください。
+
+手順 3. フロントエンドを起動（任意）
+
+ブラウザから直接APIサーバーへアクセスするため、APIサーバー側でCORSを許可しています（`event-management/src/main/resources/application.yaml`の`app.cors.allowed-origins`、既定値は`http://localhost:3000`）。
+
+```bash
+(cd front && npm install && npm run dev)
+```
+
+[http://localhost:3000](http://localhost:3000)でフロントエンドにアクセスできます。詳細は[front/README.md](./front/README.md)を参照してください。
 
 
 ［デモ］APIの使い方
