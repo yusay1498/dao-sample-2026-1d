@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05050f;
+  --foreground: #f5f4fb;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --accent-violet: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-cyan: #22d3ee;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --font-sans: var(--font-zen-kaku);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: var(--accent-violet);
+  color: white;
+}
+
+/* 細めでオーロラテーマになじむスクロールバー */
+* {
+  scrollbar-color: rgba(168, 85, 247, 0.5) transparent;
+  scrollbar-width: thin;
+}
+
+.glass-panel {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(20px);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--accent-violet), var(--accent-pink), var(--accent-cyan));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-flow 6s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+  100% {
+    background-position: 0% center;
+  }
+}
+
+@keyframes aurora-drift-1 {
+  0%,
+  100% {
+    transform: translate(-10%, -10%) scale(1);
+  }
+  50% {
+    transform: translate(10%, 15%) scale(1.15);
+  }
+}
+
+@keyframes aurora-drift-2 {
+  0%,
+  100% {
+    transform: translate(15%, 5%) scale(1.1);
+  }
+  50% {
+    transform: translate(-15%, -10%) scale(0.95);
+  }
+}
+
+@keyframes aurora-drift-3 {
+  0%,
+  100% {
+    transform: translate(-5%, 15%) scale(0.95);
+  }
+  50% {
+    transform: translate(10%, -15%) scale(1.1);
+  }
+}
+
+.aurora-blob-1 {
+  animation: aurora-drift-1 22s ease-in-out infinite;
+}
+
+.aurora-blob-2 {
+  animation: aurora-drift-2 26s ease-in-out infinite;
+}
+
+.aurora-blob-3 {
+  animation: aurora-drift-3 30s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.12) 37%,
+    rgba(255, 255, 255, 0.04) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob-1,
+  .aurora-blob-2,
+  .aurora-blob-3,
+  .text-gradient,
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
